@@ -23,9 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-f=lwn+2gad%(3dsd^#pm+a&q0$5+dlegyf#%0bd#8s@i_nx108'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['alienandpredator.pythonanywhere.com']
 
 
 # Application definition
@@ -127,7 +127,7 @@ ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': '/home/alienandpredator/drf/mysite/db.sqlite3',
     }
 }
 
@@ -169,7 +169,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR /  'static']
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = '/home/alienandpredator/drf/mysite/staticfiles'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
