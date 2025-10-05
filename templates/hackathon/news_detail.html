@@ -1,0 +1,22 @@
+{% extends 'hackathon/base.html' %}
+{% load static %}
+
+{% block title %}News - {{ article.title }} - Cognitive Chaos{% endblock %}
+
+{% block content %}
+<section class="py-16 px-4 chaos-section bg-gradient-chaos">
+    <div class="max-w-7xl mx-auto">
+        <div class="glass-panel chaos-panel p-6">
+            {% if article.image %}
+            <img src="{{ article.image.url }}" alt="{{ article.title }}" class="w-full h-64 object-cover rounded-t-lg parallax-bg">
+            {% endif %}
+            <h2 class="text-3xl font-bold mb-4 chaos-text">{{ article.title }}</h2>
+            <p class="text-sm chaos-text mb-2">{{ article.category }} • {{ article.created_at|date:"M d, Y" }} • {{ article.views }} Views</p>
+            <p class="chaos-text">{{ article.content }}</p>
+        </div>
+    </div>
+</section>
+{% endblock %}
+```
+
+{% block extra_js %}

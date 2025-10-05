@@ -1,0 +1,47 @@
+{% extends 'hackathon/base.html' %}
+{% load static %}
+
+{% block title %}Forum - Cognitive Chaos{% endblock %}
+
+{% block content %}
+<section class="py-16 px-4 chaos-section bg-gradient-chaos">
+    <h2 class="text-3xl font-bold text-center mb-8 chaos-text">Chaos Forum</h2>
+    <div class="max-w-7xl mx-auto">
+        <div class="flex space-x-4 mb-6 overflow-x-auto">
+            {% for category in categories %}
+            <a href="?category={{ category.name }}" class="category-filter glass-panel p-2 {% if request.GET.category == category.name %}active{% endif %}">{{ category.name }}</a>
+            {% endfor %}
+            <a href="{% url 'forum_main' %}" class="category-filter glass-panel p-2 {% if not request.GET.category %}active{% endif %}">All Chaos</a>
+        </div>
+        {% if user.is_authenticated %}
+        <div class="glass-panel chaos-panel p-6 mb-6">
+            <h3 class="text-xl font-bold mb-4 chaos-text">Start Chaos Thread</h3>
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="chaos-button">Unleash Thread</button>
+            </form>
+        </div>
+        {% else %}
+        <p class="text-center chaos-text mb-6">Login to unleash chaos: <a href="{% url 'login_page' %}" class="chaos-link">Enter</a></p>
+        {% endif %}
+        <div class="chaos-threads grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for thread in threads %}
+            <div class="thread-item glass-card chaos-card p-4 skeleton">
+                <div class="flex justify-between">
+                    <h3 class="text-lg font-bold chaos-text">{{ thread.title }}</h3>
+                    <span class="text-sm chaos-text">{{ thread.views }} Views</span>
+                </div>
+                <p class="line-clamp-2">{{ thread.content|truncatewords:20 }}</p>
+                <div class="flex justify-between mt-2">
+                    <p class="text-sm chaos-text">By {{ thread.created_by.username }} • {{ thread.created_at|date:"M d, Y" }}</p>
+                    <a href="{% url 'forum_thread' thread.id %}" class="chaos-link">Enter Thread</a>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-center chaos-text">No threads yet. Unleash the first!</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

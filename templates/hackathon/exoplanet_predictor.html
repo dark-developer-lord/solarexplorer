@@ -1,0 +1,389 @@
+{% extends 'hackathon/base.html' %}
+{% load static %}
+
+{% block title %}Exoplanet Predictor - Cognitive Chaos{% endblock %}
+
+{% block content %}
+<section class="py-16 px-4 chaos-section bg-gradient-chaos">
+    <div class="container mx-auto">
+        <h2 class="text-4xl font-bold text-center mb-8 chaos-text">🪐 Exoplanet Prediction System</h2>
+        
+        <!-- Mission Selection -->
+        <div class="glass-panel chaos-panel p-6 mb-8">
+            <h3 class="text-2xl font-bold mb-4 chaos-text">Select Mission</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button class="mission-btn chaos-button py-4 px-6 rounded-xl text-center" data-mission="kepler">
+                    <span class="text-xl">🔭 Kepler</span>
+                    <p class="text-sm mt-2">Planet Candidate Analysis</p>
+                </button>
+                <button class="mission-btn chaos-button py-4 px-6 rounded-xl text-center" data-mission="tess">
+                    <span class="text-xl">🌟 TESS</span>
+                    <p class="text-sm mt-2">Transit Survey Data</p>
+                </button>
+                <button class="mission-btn chaos-button py-4 px-6 rounded-xl text-center" data-mission="k2">
+                    <span class="text-xl">🚀 K2</span>
+                    <p class="text-sm mt-2">Extended Mission Data</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- Data Input Forms -->
+        <div id="forms-container" class="glass-panel chaos-panel p-6 mb-8 hidden">
+            <h3 id="form-title" class="text-2xl font-bold mb-6 chaos-text">Input Parameters</h3>
+            
+            <!-- Kepler Form -->
+            <div id="kepler-form" class="mission-form hidden">
+                <form id="kepler-data-form">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                        {% for field in kepler_form %}
+                        <div class="input-group">
+                            <label class="chaos-text block mb-2">{{ field.label }}</label>
+                            {{ field }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </form>
+            </div>
+
+            <!-- TESS Form -->
+            <div id="tess-form" class="mission-form hidden">
+                <form id="tess-data-form">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                        {% for field in tess_form %}
+                        <div class="input-group">
+                            <label class="chaos-text block mb-2">{{ field.label }}</label>
+                            {{ field }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </form>
+            </div>
+
+            <!-- K2 Form -->
+            <div id="k2-form" class="mission-form hidden">
+                <form id="k2-data-form">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                        {% for field in k2_form %}
+                        <div class="input-group">
+                            <label class="chaos-text block mb-2">{{ field.label }}</label>
+                            {{ field }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </form>
+            </div>
+
+            <!-- Model Level Selection -->
+            <div class="mb-6">
+                <label class="chaos-text block mb-2">Model Level</label>
+                <select id="model-level" class="glass-input w-full p-3 rounded-lg">
+                    <option value="1">Level 1 - Standard Model</option>
+                    <option value="2">Level 2 - Advanced Model</option>
+                </select>
+            </div>
+
+            <button id="predict-btn" class="chaos-button text-white py-4 px-8 rounded-xl w-full text-xl">
+                🚀 Analyze Exoplanet Data
+            </button>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results-container" class="glass-panel chaos-panel p-6 hidden">
+            <h3 class="text-2xl font-bold mb-6 chaos-text">Prediction Results</h3>
+            <div id="results-content">
+                <!-- Results will be populated here -->
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loading-indicator" class="glass-panel chaos-panel p-6 text-center hidden">
+            <div class="skeleton w-16 h-16 mx-auto mb-4 rounded-full"></div>
+            <p class="chaos-text">Analyzing celestial data...</p>
+        </div>
+    </div>
+</section>
+
+<style>
+.mission-btn {
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.mission-btn:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 12px 40px rgba(102, 126, 234, 0.3);
+}
+
+.probability-bar {
+    height: 20px;
+    border-radius: 10px;
+    transition: width 1s ease-in-out;
+}
+
+.status-success { 
+    border-left: 4px solid #10b981; 
+    background: rgba(16, 185, 129, 0.1); 
+}
+.status-warning { 
+    border-left: 4px solid #f59e0b; 
+    background: rgba(245, 158, 11, 0.1); 
+}
+.status-error { 
+    border-left: 4px solid #ef4444; 
+    background: rgba(239, 68, 68, 0.1); 
+}
+
+.glass-input {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #000;
+    padding: 0.75rem;
+    border-radius: 8px;
+    width: 100%;
+}
+
+.glass-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.result-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.result-table th, .result-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    color: #000;
+}
+
+.result-table th {
+    background: rgba(255, 255, 255, 0.2);
+    font-weight: bold;
+}
+
+.hidden {
+    display: none;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const missionBtns = document.querySelectorAll('.mission-btn');
+    const formsContainer = document.getElementById('forms-container');
+    const formTitle = document.getElementById('form-title');
+    const resultsContainer = document.getElementById('results-container');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const predictBtn = document.getElementById('predict-btn');
+    
+    let currentMission = '';
+
+    // Mission selection
+    missionBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            currentMission = this.dataset.mission;
+            formsContainer.classList.remove('hidden');
+            
+            // Hide all forms
+            document.querySelectorAll('.mission-form').forEach(form => {
+                form.classList.add('hidden');
+            });
+            
+            // Show selected form
+            document.getElementById(`${currentMission}-form`).classList.remove('hidden');
+            
+            // Update title
+            const missionNames = {
+                'kepler': 'Kepler',
+                'tess': 'TESS', 
+                'k2': 'K2'
+            };
+            formTitle.textContent = `${missionNames[currentMission]} Data Input`;
+            
+            // Hide previous results
+            resultsContainer.classList.add('hidden');
+        });
+    });
+
+    // Prediction button
+    predictBtn.addEventListener('click', function() {
+        if (!currentMission) {
+            alert('Please select a mission first!');
+            return;
+        }
+
+        // Collect form data
+        const formData = {};
+        const inputs = document.querySelectorAll(`#${currentMission}-data-form input`);
+        let valid = true;
+
+        inputs.forEach(input => {
+            if (input.value === '') {
+                valid = false;
+                input.style.borderColor = 'red';
+            } else {
+                input.style.borderColor = '';
+                formData[input.name] = parseFloat(input.value);
+            }
+        });
+
+        if (!valid) {
+            alert('Please fill in all required fields!');
+            return;
+        }
+
+        // Show loading
+        formsContainer.classList.add('hidden');
+        loadingIndicator.classList.remove('hidden');
+
+        // Send prediction request
+        const modelLevel = document.getElementById('model-level').value;
+        
+        console.log('Sending request with data:', {
+            mission: currentMission,
+            sample_data: formData,
+            level: parseInt(modelLevel)
+        });
+
+        fetch('/api/predict-exoplanet/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                mission: currentMission,
+                sample_data: formData,
+                level: parseInt(modelLevel)
+            })
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                // Try to get more details from the response
+                return response.text().then(text => {
+                    let errorMsg = `HTTP ${response.status}`;
+                    try {
+                        const errorData = JSON.parse(text);
+                        errorMsg += `: ${errorData.error || text}`;
+                    } catch (e) {
+                        errorMsg += `: ${text}`;
+                    }
+                    throw new Error(errorMsg);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Received data:', data);
+            loadingIndicator.classList.add('hidden');
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            displayResults(data);
+        })
+        .catch(error => {
+            console.error('Full error details:', error);
+            loadingIndicator.classList.add('hidden');
+            formsContainer.classList.remove('hidden');
+            alert('Error: ' + error.message);
+        });
+    });
+
+    function displayResults(data) {
+        // ... оставьте предыдущую реализацию displayResults ...
+        const resultsContent = document.getElementById('results-content');
+        const planetProb = (data.planet_prob * 100).toFixed(2);
+        const nonPlanetProb = (data.non_planet_prob * 100).toFixed(2);
+        
+        const statusClass = data.status_class ? `status-${data.status_class}` : 'status-warning';
+        const status = data.status || 'Unknown';
+        const recommendation = data.recommendation || 'No recommendation available';
+        const mission = data.mission || 'Unknown';
+        const level = data.level || 'Unknown';
+
+        resultsContent.innerHTML = `
+            <div class="${statusClass} p-6 mb-6 rounded-xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h4 class="text-xl font-bold chaos-text">Analysis Complete</h4>
+                    <span class="px-3 py-1 rounded-full text-sm font-bold chaos-text bg-white bg-opacity-20">
+                        ${status}
+                    </span>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <h5 class="font-bold chaos-text mb-2">🌍 Planet Probability</h5>
+                        <div class="flex items-center gap-4">
+                            <div class="flex-1 bg-gray-200 rounded-full h-6">
+                                <div class="probability-bar h-6 rounded-full bg-gradient-to-r from-green-400 to-blue-500" 
+                                     style="width: ${planetProb}%"></div>
+                            </div>
+                            <span class="font-bold chaos-text text-xl">${planetProb}%</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h5 class="font-bold chaos-text mb-2">⭐ Non-Planet Probability</h5>
+                        <div class="flex items-center gap-4">
+                            <div class="flex-1 bg-gray-200 rounded-full h-6">
+                                <div class="probability-bar h-6 rounded-full bg-gradient-to-r from-red-400 to-purple-500" 
+                                     style="width: ${nonPlanetProb}%"></div>
+                            </div>
+                            <span class="font-bold chaos-text text-xl">${nonPlanetProb}%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center mb-6">
+                    <div class="glass-panel p-4">
+                        <div class="text-sm chaos-text opacity-75">Mission</div>
+                        <div class="font-bold chaos-text text-lg">${mission}</div>
+                    </div>
+                    <div class="glass-panel p-4">
+                        <div class="text-sm chaos-text opacity-75">Model Level</div>
+                        <div class="font-bold chaos-text text-lg">${level}</div>
+                    </div>
+                    <div class="glass-panel p-4">
+                        <div class="text-sm chaos-text opacity-75">Confidence</div>
+                        <div class="font-bold chaos-text text-lg">${recommendation.split(' ')[0]}</div>
+                    </div>
+                </div>
+
+                <div class="mt-6 p-4 glass-panel bg-opacity-50">
+                    <h6 class="font-bold chaos-text mb-2">📋 Recommendation</h6>
+                    <p class="chaos-text text-lg">${recommendation}</p>
+                </div>
+            </div>
+
+            <!-- DataFrame Results -->
+            <div class="glass-panel p-6">
+                <h6 class="font-bold chaos-text mb-4 text-xl">📊 Detailed Analysis Results</h6>
+                <div class="overflow-x-auto">
+                    ${data.dataframe_html || '<p class="chaos-text">No detailed data available</p>'}
+                </div>
+            </div>
+
+            <div class="text-center mt-8">
+                <button onclick="location.reload()" class="chaos-button py-3 px-6 rounded-lg text-lg">
+                    🔄 Analyze Another Object
+                </button>
+            </div>
+        `;
+
+        resultsContainer.classList.remove('hidden');
+        
+        // Animate probability bars
+        setTimeout(() => {
+            document.querySelectorAll('.probability-bar').forEach(bar => {
+                bar.style.transition = 'width 1.5s ease-in-out';
+            });
+        }, 100);
+    }
+});
+</script>
+{% endblock %}

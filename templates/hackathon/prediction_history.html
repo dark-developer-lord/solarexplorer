@@ -1,0 +1,109 @@
+{% extends 'hackathon/base.html' %}
+{% load static %}
+
+{% block title %}Prediction History - Cognitive Chaos{% endblock %}
+
+{% block content %}
+<section class="py-16 px-4 chaos-section bg-gradient-chaos">
+    <div class="container mx-auto">
+        <h2 class="text-4xl font-bold text-center mb-8 chaos-text">📊 Prediction History</h2>
+        
+        <div class="glass-panel chaos-panel p-6 mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold chaos-text">All Predictions</h3>
+                <span class="chaos-text opacity-75">{{ total_predictions }} total predictions</span>
+            </div>
+
+            {% if page_obj %}
+            <div class="overflow-x-auto">
+                <table class="w-full glass-table">
+                    <thead>
+                        <tr class="border-b border-gray-200">
+                            <th class="py-3 px-4 text-left chaos-text">Mission</th>
+                            <th class="py-3 px-4 text-left chaos-text">Planet Probability</th>
+                            <th class="py-3 px-4 text-left chaos-text">Confidence</th>
+                            <th class="py-3 px-4 text-left chaos-text">Status</th>
+                            <th class="py-3 px-4 text-left chaos-text">Date</th>
+                            <th class="py-3 px-4 text-left chaos-text">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prediction in page_obj %}
+                        <tr class="border-b border-gray-100 hover:bg-white hover:bg-opacity-10">
+                            <td class="py-3 px-4 chaos-text">
+                                <span class="font-bold">{{ prediction.get_mission_display_name }}</span>
+                            </td>
+                            <td class="py-3 px-4 chaos-text">
+                                <span class="font-bold {% if prediction.planet_probability > 0.6 %}text-green-500{% else %}text-yellow-500{% endif %}">
+                                    {{ prediction.planet_probability|floatformat:3 }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4">
+                                <span class="px-2 py-1 rounded-full text-xs {% if prediction.confidence_level == 'ВЫСОКАЯ' %}bg-green-500{% elif prediction.confidence_level == 'СРЕДНЯЯ' %}bg-yellow-500{% else %}bg-red-500{% endif %} text-white">
+                                    {{ prediction.confidence_level }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4">
+                                <span class="px-2 py-1 rounded-full text-xs 
+                                    {% if prediction.prediction_status == 'ПЛАНЕТА' %}bg-green-500
+                                    {% elif prediction.prediction_status == 'ВЕРОЯТНО' %}bg-blue-500
+                                    {% elif prediction.prediction_status == 'НЕОПРЕДЕЛЕННО' %}bg-yellow-500
+                                    {% else %}bg-red-500{% endif %} text-white">
+                                    {{ prediction.prediction_status }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 chaos-text text-sm">
+                                {{ prediction.created_at|date:"M d, Y H:i" }}
+                            </td>
+                            <td class="py-3 px-4">
+                                <a href="{% url 'prediction_detail' prediction.id %}" class="chaos-button py-1 px-3 rounded text-sm">
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <div class="mt-6 flex justify-center">
+                <div class="flex space-x-2">
+                    {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}" class="glass-panel py-2 px-4 rounded chaos-text">Previous</a>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <span class="glass-panel py-2 px-4 rounded chaos-button text-white">{{ num }}</span>
+                    {% else %}
+                    <a href="?page={{ num }}" class="glass-panel py-2 px-4 rounded chaos-text">{{ num }}</a>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="glass-panel py-2 px-4 rounded chaos-text">Next</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% else %}
+            <div class="text-center py-8">
+                <p class="chaos-text text-xl mb-4">No predictions yet</p>
+                <a href="{% url 'exoplanet_predictor' %}" class="chaos-button py-3 px-6 rounded-lg">
+                    Make Your First Prediction
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="text-center">
+            <a href="{% url 'exoplanet_predictor' %}" class="chaos-button py-3 px-6 rounded-lg">
+                ← Back to Predictor
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

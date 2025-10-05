@@ -1,0 +1,22 @@
+{% extends 'hackathon/base.html' %}
+{% load static %}
+
+{% block title %}AI Demo - Cognitive Chaos{% endblock %}
+
+{% block content %}
+<section class="py-16 px-4 chaos-section bg-gradient-chaos">
+    <h2 class="text-3xl font-bold text-center mb-8 chaos-text">Chaos AI Exoplanet Explorer</h2>
+    <div class="glass-panel chaos-panel p-6 max-w-4xl mx-auto text-center">
+        <p class="mb-4 chaos-text">Dive into the chaos of exoplanet data with our AI interface.</p>
+        <button id="ai-trial-button" class="chaos-button text-white py-3 px-8 rounded-full">Enter Chaos</button>
+        <div id="demo-preview" class="mt-6 hidden chaos-preview">
+            <select id="demo-select" class="glass-input p-3 rounded-full w-full mb-4">
+                <option value="kepler">Kepler KOI Chaos</option>
+                <option value="tess">TESS TOI Vortex</option>
+                <option value="k2">K2 Storm</option>
+            </select>
+            <div id="demo-output" class="p-4 glass-panel chaos-output rounded-xl"></div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends 'hackathon/base.html' %}
+{% load static %}
+
+{% block title %}Home - Cognitive Chaos{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section id="hero" class="relative overflow-hidden chaos-bg" style="aspect-ratio: 16/9;">
+    <div class="parallax-bg" style="background-image: url('{% static 'hackathon/images/team_bg.jpg' %}');"></div>
+    <div class="relative z-10 flex flex-col items-center justify-center h-full">
+        <div class="team-header-frame glass-frame text-center p-6 max-w-md mx-auto">
+            <h1 class="text-4xl font-bold chaos-text">Team: Alien And Predator</h1>
+            <p class="mt-2 text-lg opacity-90 chaos-text">Chaos in the Cosmos</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 max-w-7xl mx-auto mt-8">
+            {% for member in team_members %}
+            <div class="team-card glass-card chaos-card relative overflow-hidden cursor-pointer group" data-modal="modal-{{ forloop.counter }}">
+                <img src="{% static 'hackathon/images/member' %}{{ forloop.counter }}.jpg" alt="{{ member.name }}" class="w-full h-48 object-cover transition-transform group-hover:scale-110">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="absolute bottom-0 left-0 right-0 p-4 chaos-text">
+                    <h3 class="font-bold text-lg">{{ member.name }}</h3>
+                    <p class="text-sm opacity-90">{{ member.role }}</p>
+                </div>
+            </div>
+            <div id="modal-{{ forloop.counter }}" class="modal hidden fixed inset-0 z-50 flex items-center justify-center chaos-bg">
+                <div class="modal-content glass-modal max-w-4xl w-full mx-4 relative">
+                    <span class="modal-close absolute top-4 right-4 text-3xl cursor-pointer chaos-text z-10">&times;</span>
+                    <img src="{% static 'hackathon/images/member' %}{{ forloop.counter }}.jpg" alt="{{ member.name }}" class="w-full h-64 object-cover rounded-t-lg">
+                    <div class="p-6 chaos-text">
+                        <h3 class="text-2xl font-bold mb-2">{{ member.name }}</h3>
+                        <p class="text-sm mb-2 opacity-90">{{ member.role }}</p>
+                        <p class="mb-2">{{ member.bio }}</p>
+                        <p class="mb-2"><strong>Skills:</strong> {{ member.skills }}</p>
+                        <p class="mb-2"><strong>Contributions:</strong> {{ member.contributions }}</p>
+                        <div class="flex space-x-4 mt-4">
+                            <a href="mailto:{{ member.contact }}" class="chaos-link hover:chaos-hover">Email</a>
+                            {% if member.social_media %}<a href="{{ member.social_media }}" class="chaos-link hover:chaos-hover">Social</a>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- User Blocks Section -->
+<section id="user-blocks" class="py-16 px-4 chaos-section bg-gradient-chaos">
+    <h2 class="text-3xl font-bold text-center mb-8 chaos-text">Service Users (Chaos Network)</h2>
+    <div class="user-blocks-container max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        {% for user in users %}
+        <div class="user-block glass-block chaos-block relative w-32 h-32 rounded-xl overflow-hidden cursor-pointer group hover:z-10" style="border: 2px solid {{ user.border_color }}; animation-delay: {{ user.stats.random_delay }}s;">
+            <img src="{{ user.profile_photo }}" alt="{{ user.username }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform">
+            <div class="absolute bottom-2 left-2 right-2 chaos-text text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                <div class="font-bold">{{ user.username|slice:":3"|upper }}</div>
+                <div class="stats chaos-stats text-[10px] mt-1">
+                    <span class="stat-counter" data-target="{{ user.stats.posts|default:0 }}">0</span> Posts | 
+                    <span class="stat-counter" data-target="{{ user.stats.threads|default:0 }}">0</span> Threads
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- NASA Analytics Section -->
+<section id="nasa-analytics" class="py-16 px-4 chaos-section bg-gradient-chaos">
+    <h2 class="text-3xl font-bold text-center mb-8 chaos-text">NASA Exoplanet Chaos Analytics</h2>
+    <div class="analytics-grid grid grid-cols-1 md:grid-cols-2 gap-6 max-w-7xl mx-auto">
+        <div class="glass-panel chaos-panel p-6">
+            <h3 class="text-xl font-bold mb-4 chaos-text">Kepler KOI Distribution</h3>
+            <canvas id="kepler-chart" class="chaos-chart"></canvas>
+        </div>
+        <div class="glass-panel chaos-panel p-6">
+            <h3 class="text-xl font-bold mb-4 chaos-text">TESS TOI Characteristics</h3>
+            <canvas id="tess-chart" class="chaos-chart"></canvas>
+        </div>
+        <div class="glass-panel chaos-panel p-6 md:col-span-2">
+            <h3 class="text-xl font-bold mb-4 chaos-text">K2 Mission Timeline</h3>
+            <canvas id="k2-chart" class="chaos-chart w-full"></canvas>
+        </div>
+        <div class="glass-panel chaos-panel p-6 md:col-span-2">
+            <h3 class="text-xl font-bold mb-4 chaos-text">Exoplanet Size Distribution</h3>
+            <canvas id="size-chart" class="chaos-chart w-full"></canvas>
+        </div>
+    </div>
+    <p class="mt-8 text-center text-sm chaos-text">{{ disclaimer }}</p>
+</section>
+
+<!-- AI Demo Section -->
+<section id="ai-demo" class="py-16 px-4 chaos-section bg-gradient-chaos">
+    <h2 class="text-3xl font-bold text-center mb-8 chaos-text">Chaos AI Exoplanet Explorer</h2>
+    <div class="glass-panel chaos-panel p-6 max-w-4xl mx-auto text-center">
+        <p class="mb-4 chaos-text">Dive into the chaos of exoplanet data with our AI interface.</p>
+        <button id="ai-trial-button" class="chaos-button text-white py-3 px-8 rounded-full">Enter Chaos</button>
+        <div id="demo-preview" class="mt-6 hidden chaos-preview">
+            <select id="demo-select" class="glass-input p-3 rounded-full w-full mb-4">
+                <option value="kepler">Kepler KOI Chaos</option>
+                <option value="tess">TESS TOI Vortex</option>
+                <option value="k2">K2 Storm</option>
+            </select>
+            <div id="demo-output" class="p-4 glass-panel chaos-output rounded-xl"></div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Counter Animation
+    document.querySelectorAll('.stat-counter').forEach(counter => {
+        const target = parseInt(counter.dataset.target);
+        let current = 0;
+        const increment = target / 50;
+        const updateCounter = () => {
+            if (current < target) {
+                current += increment;
+                counter.textContent = Math.ceil(current);
+                requestAnimationFrame(updateCounter);
+            } else {
+                counter.textContent = target;
+            }
+        };
+        requestAnimationFrame(updateCounter);
+    });
+</script>
+{% endblock %}

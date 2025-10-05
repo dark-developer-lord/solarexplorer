@@ -1,0 +1,39 @@
+{% extends 'hackathon/base.html' %}
+{% load static %}
+
+{% block title %}Thread - {{ thread.title }} - Cognitive Chaos{% endblock %}
+
+{% block content %}
+<section class="py-16 px-4 chaos-section bg-gradient-chaos">
+    <div class="max-w-7xl mx-auto">
+        <h2 class="text-3xl font-bold mb-6 chaos-text">{{ thread.title }}</h2>
+        <div class="glass-panel chaos-panel p-6 mb-6">
+            <p class="chaos-text">{{ thread.content }}</p>
+            <p class="text-sm chaos-text mt-2">By {{ thread.created_by.username }} • {{ thread.created_at|date:"M d, Y" }} • {{ thread.views }} Views</p>
+        </div>
+        <div class="chaos-threads">
+            {% for post in posts %}
+            <div class="glass-card chaos-card p-4 mb-4 skeleton">
+                <p class="chaos-text">{{ post.content }}</p>
+                <p class="text-sm chaos-text mt-2">By {{ post.created_by.username }} • {{ post.created_at|date:"M d, Y" }}</p>
+            </div>
+            {% empty %}
+            <p class="chaos-text">No posts yet. Be the first to reply!</p>
+            {% endfor %}
+        </div>
+        {% if user.is_authenticated %}
+        <div class="glass-panel chaos-panel p-6 mt-6">
+            <h3 class="text-xl font-bold mb-4 chaos-text">Reply to Thread</h3>
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="chaos-button">Post Reply</button>
+            </form>
+        </div>
+        {% else %}
+        <p class="text-center chaos-text">Login to reply: <a href="{% url 'login_page' %}" class="chaos-link">Enter</a></p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+```

@@ -1,0 +1,301 @@
+/* Cognitive Overload / Information Chaos Theme */
+:root {
+    --glass-blur: 20px;
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.2);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --chaos-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --chaos-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --chaos-text: #1a1a1a;
+    --chaos-bg: #f0f0f0;
+    --transition-smooth: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --float-duration: 6s;
+}
+
+/* Emergency Visibility Fixes */
+.glass-panel, .chaos-panel, .chaos-section {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+.chaos-text, p, h1, h2, h3, h4, h5, h6, span, div {
+    color: #000000 !important;
+    opacity: 1 !important;
+}
+input, textarea, select, button {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid #ccc !important;
+    color: #000000 !important;
+}
+
+/* Glass Morphism Fallback */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: none !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Base Styles */
+* { box-sizing: border-box; }
+body {
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+    color: var(--chaos-text);
+    margin: 0;
+    overflow-x: hidden;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.chaos-bg::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: -1;
+    animation: chaosPulse 20s ease-in-out infinite;
+}
+
+@keyframes chaosPulse {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+/* Glass Morphism */
+.glass-panel, .glass-card, .glass-input, .glass-modal, .glass-menu, .glass-frame {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+    border: var(--glass-border);
+    border-radius: 16px;
+    box-shadow: var(--glass-shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.glass-panel::before, .glass-card::before, .glass-modal::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%);
+    pointer-events: none;
+    animation: glassRefraction 4s ease-in-out infinite alternate;
+}
+
+@keyframes glassRefraction {
+    0% { transform: translateX(-2px) translateY(-1px); }
+    100% { transform: translateX(2px) translateY(1px); }
+}
+
+/* Parallax Effect */
+.parallax-bg {
+    background-size: cover;
+    background-position: center;
+    position: absolute;
+    top: -20%; left: 0; width: 100%; height: 140%;
+    z-index: -1;
+    transform: translateZ(0);
+}
+
+/* Floating Animation */
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+.user-block {
+    animation: float var(--float-duration) ease-in-out infinite;
+}
+
+/* Navbar */
+.navbar {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(var(--glass-blur));
+    border-bottom: var(--glass-border);
+}
+
+.nav-link, .chaos-link {
+    position: relative;
+    transition: var(--transition-smooth);
+    color: var(--chaos-text);
+}
+
+.nav-link::after, .chaos-link::after {
+    content: '';
+    position: absolute; bottom: -4px; left: 0; width: 0; height: 2px;
+    background: var(--chaos-primary);
+    transition: width 0.3s ease;
+}
+
+.nav-link:hover::after, .chaos-link:hover::after { width: 100%; }
+
+/* User Indicator */
+.user-indicator .glass-menu {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border: var(--glass-border);
+}
+
+.user-indicator .profile-menu {
+    transform: translateY(-10px);
+    opacity: 0;
+    transition: var(--transition-smooth);
+}
+.user-indicator .profile-menu:not(.hidden) {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    background: rgba(0, 0, 0, 0.7);
+}
+.modal.active {
+    display: flex;
+}
+.modal-content {
+    transform: scale(0.8) rotate(-5deg);
+    opacity: 0;
+    transition: var(--transition-smooth);
+}
+.modal.active .modal-content {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+}
+
+/* Forms */
+.input-group { position: relative; }
+.glass-input {
+    background: var(--glass-bg);
+    border: var(--glass-border);
+    color: var(--chaos-text);
+    padding: 1rem;
+    border-radius: 12px;
+    transition: var(--transition-smooth);
+}
+.glass-input:focus {
+    border-color: var(--chaos-primary);
+    box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+    transform: scale(1.02);
+}
+.input-error {
+    color: #f5576c;
+    position: absolute;
+    bottom: -1.5rem;
+    left: 0;
+    font-size: 0.75rem;
+}
+.input-group.error .glass-input {
+    animation: shake 0.3s ease;
+}
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Buttons */
+.chaos-button {
+    background: var(--chaos-primary);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: bold;
+    transition: var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+}
+.chaos-button::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+.chaos-button:hover::before { left: 100%; }
+.chaos-button:hover { transform: scale(1.05); }
+
+/* Forum & News */
+.chaos-threads, .chaos-grid { perspective: 1000px; }
+.thread-item, .news-card {
+    transform-style: preserve-3d;
+    transition: var(--transition-smooth);
+}
+.thread-item:hover, .news-card:hover {
+    transform: rotateY(5deg) translateZ(20px);
+}
+.category-filter, .news-filter {
+    background: var(--glass-bg);
+    border: var(--glass-border);
+    color: var(--chaos-text);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    transition: var(--transition-smooth);
+}
+.category-filter.active, .news-filter.active {
+    background: var(--chaos-primary);
+    color: white;
+    transform: scale(1.05);
+}
+
+/* Shimmer Loading */
+.skeleton {
+    background: linear-gradient(90deg, rgba(255,255,255,0.1) 25%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.1) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* Charts */
+.chaos-chart { filter: drop-shadow(var(--glass-shadow)); }
+
+/* Accessibility */
+@supports not (backdrop-filter: blur(20px)) {
+    .glass-panel, .glass-card, .glass-input, .glass-modal, .glass-menu, .glass-frame {
+        background: rgba(255, 255, 255, 0.3);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .user-block, .chaos-section, .team-card, .chaos-button, .modal-content, .glass-input, .thread-item, .news-card {
+        animation: none;
+        transition: none;
+    }
+    .parallax-bg { transform: none !important; }
+}
+
+/* Responsive Design */
+@media (max-width: 767px) {
+    .chaos-grid { grid-template-columns: 1fr; }
+    .user-blocks-container { grid-template-columns: repeat(2, 1fr); }
+    .modal-content { transform: scale(0.95) !important; }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+    .chaos-grid { grid-template-columns: repeat(2, 1fr); }
+    .user-blocks-container { grid-template-columns: repeat(4, 1fr); }
+}
+@media (min-width: 1024px) {
+    .chaos-grid { grid-template-columns: repeat(3, 1fr); }
+    .user-blocks-container { grid-template-columns: repeat(6, 1fr); }
+}
+
+/* Scroll Animations */
+.chaos-section {
+    opacity: 0;
+    transform: translateY(50px) rotateX(10deg);
+    transition: var(--transition-smooth);
+}
+.chaos-section.visible {
+    opacity: 1;
+    transform: translateY(0) rotateX(0);
+}

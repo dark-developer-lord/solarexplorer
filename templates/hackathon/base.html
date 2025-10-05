@@ -1,0 +1,50 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Exoplanet Research Hub{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <link rel="stylesheet" href="{% static 'hackathon/style.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body class="bg-gradient-chaos chaos-bg">
+    <nav class="navbar fixed top-0 w-full z-50">
+        <div class="nav-container max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="{% url 'home' %}" class="text-2xl font-bold chaos-text">Exoplanet Hub</a>
+            <div class="flex items-center space-x-4">
+                <a href="{% url 'home' %}" class="nav-link chaos-link">Home</a>
+                <a href="{% url 'forum_main' %}" class="nav-link chaos-link">Forum</a>
+                <a href="{% url 'news_list' %}" class="nav-link chaos-link">News</a>
+                <a href="{% url 'nasa_analytics' %}" class="nav-link chaos-link">Analytics</a>
+                <a href="{% url 'exoplanet_predictor' %}" class="nav-link chaos-link">AI Demo</a>
+                <a href="{% url 'galaxy' %}" class="nav-link chaos-link">AI GALAXY</a>
+                {% if user.is_authenticated %}
+                <div class="user-indicator relative" tabindex="0">
+                    <div class="w-8 h-8 rounded-full bg-gradient-chaos flex items-center justify-center text-white font-bold cursor-pointer">
+                        {{ user.username.0|upper }}
+                    </div>
+                    <div class="profile-menu glass-menu hidden absolute right-0 mt-2 w-48 rounded-lg">
+                        <div class="p-4 chaos-text">
+                            <p>{{ user.username }} ({{ user.email }})</p>
+                            <a href="{% url 'user_profile' %}" class="block mt-2 chaos-link">Profile</a>
+                            <a href="{% url 'logout' %}" class="block mt-2 chaos-button" onclick="return confirm('Logout?')">Logout</a>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <a href="{% url 'login_page' %}" class="nav-link chaos-link">Login</a>
+                <a href="{% url 'register_page' %}" class="nav-link chaos-link">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    <main class="pt-20">
+        {% block content %}{% endblock %}
+    </main>
+    <script src="{% static 'hackathon/script.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

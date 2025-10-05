@@ -1,0 +1,32 @@
+{% extends 'hackathon/base.html' %}
+{% load static %}
+
+{% block title %}Register - Cognitive Chaos{% endblock %}
+
+{% block content %}
+<section class="py-16 px-4 chaos-section bg-gradient-chaos">
+    <div class="glass-panel chaos-panel p-6 max-w-md mx-auto">
+        <h2 class="text-3xl font-bold text-center mb-6 chaos-text">Join the Chaos</h2>
+        <form id="register-form" method="post" class="space-y-4">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="input-group">
+                {{ field.label_tag }}
+                {{ field }}
+                <span class="input-error"></span>
+            </div>
+            {% endfor %}
+            <button type="submit" class="chaos-button w-full">Sign Up</button>
+        </form>
+        {% if error %}
+        <p class="text-center text-red-500 mt-4">{{ error }}</p>
+        {% endif %}
+        {% if form.errors %}
+        <p class="text-center text-red-500 mt-4">{{ form.errors.as_text }}</p>
+        {% endif %}
+        <p class="text-center mt-4 chaos-text">
+            Already have an account? <a href="{% url 'login_page' %}" class="chaos-link">Login</a>
+        </p>
+    </div>
+</section>
+{% endblock %}
