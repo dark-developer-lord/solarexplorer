@@ -12,7 +12,6 @@ charset-normalizer==3.4.1
 idna==3.10
 urllib3==2.3.0
 python-dotenv==1.1.0
-# Для ИИ (добавьте только те, которые реально используете)
 catboost==1.2.8
 scikit-learn==1.7.2
 numpy==2.2.3
@@ -28,8 +27,5 @@ pytz==2025.1
 tzdata==2025.1
 pillow==11.2.1
 opencv-python==4.12.0.88
-openai==1.76.0
-torch==2.6.0
-torchvision==0.21.0
 tqdm==4.67.1
 filelock==3.17.0

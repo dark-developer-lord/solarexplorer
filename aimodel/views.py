@@ -1,4 +1,3 @@
-# aimodel/views.py
 import json
 import logging
 import pandas as pd
@@ -35,75 +34,100 @@ def predict_exoplanet_api(request):
             sample_data = data.get('sample_data')
             level = data.get('level', 1)
             
-            print(f"Received request: mission={mission}, level={level}")
+            logger.info(f"Received prediction request: mission={mission}, level={level}")
+            logger.debug(f"Sample data: {sample_data}")
             
             # Валидация
             if not mission or not sample_data:
                 return JsonResponse({'error': 'Missing mission or sample data'}, status=400)
             
+            # Проверка допустимых миссий
+            if mission not in ['k2', 'kepler', 'tess']:
+                return JsonResponse({'error': 'Invalid mission. Must be: k2, kepler, or tess'}, status=400)
+            
+            # Проверка уровня модели
+            if level not in [1, 2]:
+                return JsonResponse({'error': 'Invalid level. Must be: 1 or 2'}, status=400)
+            
             # Импортируем здесь чтобы избежать циклических импортов
             from .transform_to_log import predict_exoplanet
             
-            # Предсказание
-            result = predict_exoplanet(sample_data, mission=mission, level=level)
-            
-            # Определяем статус и рекомендации
-            planet_prob = result['planet_prob']
-            if planet_prob > 0.7:
-                status = "HIGH PLANET PROBABILITY"
-                recommendation = "✅ Strong exoplanet candidate"
-                status_class = "success"
-            elif planet_prob > 0.5:
-                status = "LIKELY PLANET"
-                recommendation = "⚠️ Requires additional verification"
-                status_class = "warning"
-            else:
-                status = "LOW PLANET PROBABILITY"
-                recommendation = "❌ Possible false positive"
-                status_class = "error"
-            
-            # Создаем DataFrame с результатами
-            df_data = []
-            
-            # Добавляем основные результаты
-            df_data.append({
-                'Parameter': 'Planet Probability',
-                'Value': f"{result['planet_prob']:.4f}",
-                'Type': 'Result'
-            })
-            df_data.append({
-                'Parameter': 'Non-Planet Probability', 
-                'Value': f"{result['non_planet_prob']:.4f}",
-                'Type': 'Result'
-            })
-            
-            # Добавляем входные параметры
-            for key, value in sample_data.items():
+            try:
+                # Предсказание
+                result = predict_exoplanet(sample_data, mission=mission, level=level)
+                
+                # Определяем статус и рекомендации
+                planet_prob = result['planet_prob']
+                if planet_prob > 0.7:
+                    status = "HIGH PLANET PROBABILITY"
+                    recommendation = "✅ Strong exoplanet candidate - further observation recommended"
+                    status_class = "success"
+                    icon = "🪐"
+                elif planet_prob > 0.5:
+                    status = "LIKELY PLANET"
+                    recommendation = "⚠️ Promising candidate - additional verification needed"
+                    status_class = "warning"
+                    icon = "🌍"
+                else:
+                    status = "LOW PLANET PROBABILITY"
+                    recommendation = "❌ Likely false positive - consider alternative explanations"
+                    status_class = "error"
+                    icon = "⭐"
+                
+                # Создаем DataFrame с результатами
+                df_data = []
+                
+                # Добавляем основные результаты
                 df_data.append({
-                    'Parameter': key,
-                    'Value': str(value),
-                    'Type': 'Input Parameter'
+                    'Parameter': 'Planet Probability',
+                    'Value': f"{result['planet_prob']:.4f}",
+                    'Type': 'Result'
                 })
+                df_data.append({
+                    'Parameter': 'Non-Planet Probability', 
+                    'Value': f"{result['non_planet_prob']:.4f}",
+                    'Type': 'Result'
+                })
+                
+                # Добавляем входные параметры
+                for key, value in sample_data.items():
+                    df_data.append({
+                        'Parameter': key,
+                        'Value': f"{float(value):.6f}" if isinstance(value, (int, float)) else str(value),
+                        'Type': 'Input Parameter'
+                    })
+                
+                df = pd.DataFrame(df_data)
+                
+                response_data = {
+                    "mission": mission.upper(),
+                    "level": level,
+                    "planet_prob": float(result['planet_prob']),
+                    "non_planet_prob": float(result['non_planet_prob']),
+                    "status": status,
+                    "recommendation": recommendation,
+                    "status_class": status_class,
+                    "icon": icon,
+                    "dataframe_html": df.to_html(classes='result-table', index=False, escape=False)
+                }
+                
+                logger.info(f"Prediction successful: {mission} level {level} - planet_prob: {result['planet_prob']:.4f}")
+                return JsonResponse(response_data)
+                
+            except FileNotFoundError as e:
+                logger.error(f"Model file not found: {str(e)}")
+                return JsonResponse({'error': f'Model file not found: {str(e)}'}, status=500)
+            except Exception as e:
+                logger.error(f"Prediction error in ML model: {str(e)}")
+                return JsonResponse({'error': f'ML model error: {str(e)}'}, status=500)
             
-            df = pd.DataFrame(df_data)
-            
-            response_data = {
-                "mission": mission.upper(),
-                "level": level,
-                "planet_prob": float(result['planet_prob']),
-                "non_planet_prob": float(result['non_planet_prob']),
-                "status": status,
-                "recommendation": recommendation,
-                "status_class": status_class,
-                "dataframe_html": df.to_html(classes='table table-striped', index=False, escape=False)
-            }
-            
-            return JsonResponse(response_data)
-            
+        except json.JSONDecodeError:
+            logger.error("Invalid JSON in request")
+            return JsonResponse({'error': 'Invalid JSON format'}, status=400)
         except Exception as e:
-            logger.error(f"Prediction error: {str(e)}")
+            logger.error(f"Request processing error: {str(e)}")
             import traceback
-            traceback.print_exc()  # Печатаем полный traceback в консоль
-            return JsonResponse({'error': str(e)}, status=500)
+            traceback.print_exc()
+            return JsonResponse({'error': f'Server error: {str(e)}'}, status=500)
     
     return JsonResponse({'error': 'Only POST requests allowed'}, status=405)

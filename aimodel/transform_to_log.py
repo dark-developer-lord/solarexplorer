@@ -1,196 +1,194 @@
-# aimodel/ml_predictor.py
 import os
 import numpy as np
 import pandas as pd
 import joblib
-from django.conf import settings
 
+
+# === 1. Feature transformation ===
 def transform_features(sample_dict: dict, mission: str) -> pd.DataFrame:
-    """Преобразование фичей для конкретной миссии"""
     df = pd.DataFrame([sample_dict])
     mission = mission.lower()
 
-    try:
-        if mission == "k2":
-            # K2 трансформации
-            if 'pl_orbper' in df.columns: df["log_pl_orbper"] = np.log1p(df["pl_orbper"])
-            if 'pl_trandur' in df.columns: df["log_pl_trandur"] = np.log1p(df["pl_trandur"])
-            if 'pl_rade' in df.columns: df["log_pl_rade"] = np.log1p(df["pl_rade"])
-            if 'pl_ratror' in df.columns: df["log_pl_ratror"] = np.log1p(df["pl_ratror"])
-            if 'sy_dist' in df.columns: df["log_sy_dist"] = np.log1p(df["sy_dist"])
-            if 'sy_pmra' in df.columns: df["log_abs_sy_pmra"] = np.log1p(df["sy_pmra"].abs())
-            if 'sy_pmdec' in df.columns: df["log_abs_sy_pmdec"] = np.log1p(df["sy_pmdec"].abs())
+    # === K2 ===
+    if mission == "k2":
+        df["log_pl_orbper"] = np.log1p(df["pl_orbper"])
+        df["log_pl_trandur"] = np.log1p(df["pl_trandur"])
+        df["log_pl_rade"] = np.log1p(df["pl_rade"])
+        df["log_pl_ratror"] = np.log1p(df["pl_ratror"])
+        df["log_sy_dist"] = np.log1p(df["sy_dist"])
+        df["log_abs_sy_pmra"] = np.log1p(df["sy_pmra"].abs())
+        df["log_abs_sy_pmdec"] = np.log1p(df["sy_pmdec"].abs())
 
-            cols = [
-                'pl_orbper', 'pl_trandur', 'pl_rade', 'pl_ratror',
-                'st_teff', 'st_rad', 'sy_pmra', 'sy_pmdec', 'sy_dist',
-                'sy_gaiamag', 'sy_tmag', 'sy_kepmag',
-                'log_pl_orbper', 'log_pl_trandur', 'log_pl_rade',
-                'log_pl_ratror', 'log_sy_dist', 'log_abs_sy_pmra',
-                'log_abs_sy_pmdec'
-            ]
-            # Возвращаем только существующие колонки
-            existing_cols = [col for col in cols if col in df.columns]
-            return df.reindex(columns=existing_cols, fill_value=0.0)
+        cols = [
+            'pl_orbper', 'pl_trandur', 'pl_rade', 'pl_ratror',
+            'st_teff', 'st_rad', 'sy_pmra', 'sy_pmdec', 'sy_dist',
+            'sy_gaiamag', 'sy_tmag', 'sy_kepmag',
+            'log_pl_orbper', 'log_pl_trandur', 'log_pl_rade',
+            'log_pl_ratror', 'log_sy_dist', 'log_abs_sy_pmra',
+            'log_abs_sy_pmdec'
+        ]
+        return df.reindex(columns=cols, fill_value=np.nan)
 
-        elif mission == "kepler":
-            # Kepler трансформации
-            if 'koi_period' in df.columns: df["log_koi_period"] = np.log1p(df["koi_period"])
-            if 'koi_depth' in df.columns: df["log_koi_depth"] = np.log1p(df["koi_depth"])
-            if 'koi_dor' in df.columns: df["log_koi_dor"] = np.log1p(df["koi_dor"])
-            if 'koi_ror' in df.columns: df["log_koi_ror"] = np.log1p(df["koi_ror"])
-            if 'koi_prad' in df.columns: df["log_koi_prad"] = np.log1p(df["koi_prad"])
-            if 'koi_model_snr' in df.columns: df["log_koi_model_snr"] = np.log1p(df["koi_model_snr"])
-            if 'koi_max_sngle_ev' in df.columns: df["log_koi_max_sngle_ev"] = np.log1p(df["koi_max_sngle_ev"])
-            if 'koi_num_transits' in df.columns: df["log_koi_num_transits"] = np.log1p(df["koi_num_transits"])
+    # === Kepler ===
+    elif mission == "kepler":
+        df["log_koi_period"] = np.log1p(df["koi_period"])
+        df["log_koi_depth"] = np.log1p(df["koi_depth"])
+        df["log_koi_dor"] = np.log1p(df["koi_dor"])
+        df["log_koi_ror"] = np.log1p(df["koi_ror"])
+        df["log_koi_prad"] = np.log1p(df["koi_prad"])
+        df["log_koi_model_snr"] = np.log1p(df["koi_model_snr"])
+        df["log_koi_max_sngle_ev"] = np.log1p(df["koi_max_sngle_ev"])
+        df["log_koi_num_transits"] = np.log1p(df["koi_num_transits"])
 
-            cols = [
-                'koi_period', 'koi_duration', 'koi_depth', 'koi_ror', 'koi_dor',
-                'koi_incl', 'koi_impact', 'koi_prad', 'koi_sma', 'koi_teq',
-                'koi_insol', 'koi_model_snr', 'koi_num_transits', 'koi_max_sngle_ev',
-                'koi_steff', 'koi_slogg', 'koi_smet', 'koi_srad', 'koi_smass',
-                'koi_srho', 'koi_kepmag', 'koi_gmag', 'koi_rmag', 'koi_imag',
-                'koi_zmag', 'koi_jmag', 'koi_hmag', 'koi_kmag',
-                'log_koi_period', 'log_koi_depth', 'log_koi_dor',
-                'log_koi_ror', 'log_koi_prad', 'log_koi_model_snr',
-                'log_koi_max_sngle_ev', 'log_koi_num_transits'
-            ]
-            existing_cols = [col for col in cols if col in df.columns]
-            return df.reindex(columns=existing_cols, fill_value=0.0)
+        cols = [
+            'koi_period', 'koi_duration', 'koi_depth', 'koi_ror', 'koi_dor',
+            'koi_incl', 'koi_impact', 'koi_prad', 'koi_sma', 'koi_teq',
+            'koi_insol', 'koi_model_snr', 'koi_num_transits', 'koi_max_sngle_ev',
+            'koi_steff', 'koi_slogg', 'koi_smet', 'koi_srad', 'koi_smass',
+            'koi_srho', 'koi_kepmag', 'koi_gmag', 'koi_rmag', 'koi_imag',
+            'koi_zmag', 'koi_jmag', 'koi_hmag', 'koi_kmag',
+            'log_koi_period', 'log_koi_depth', 'log_koi_dor',
+            'log_koi_ror', 'log_koi_prad', 'log_koi_model_snr',
+            'log_koi_max_sngle_ev', 'log_koi_num_transits'
+        ]
+        return df.reindex(columns=cols, fill_value=np.nan)
 
-        elif mission in ["tess", "tes"]:
-            # TESS трансформации
-            if 'pl_orbper' in df.columns: df["log_pl_orbper"] = np.log1p(df["pl_orbper"])
-            if 'pl_trandeperr1' in df.columns: df["log_pl_trandeperr1"] = np.log1p(df["pl_trandeperr1"].abs())
-            if 'st_teff' in df.columns: df["log_st_teff"] = np.log1p(df["st_teff"])
-            if 'st_logg' in df.columns: df["log_st_logg"] = np.log1p(df["st_logg"])
+    # === TESS ===
+    elif mission in ["tess", "tes"]:
+        df["log_pl_orbper"] = np.log1p(df["pl_orbper"])
+        df["log_pl_trandeperr1"] = np.log1p(df["pl_trandeperr1"].abs())
+        df["log_st_teff"] = np.log1p(df["st_teff"])
+        df["log_st_logg"] = np.log1p(df["st_logg"])
 
-            cols = [
-                'pl_orbper', 'pl_trandurh', 'pl_trandeperr1', 'pl_trandep',
-                'pl_rade', 'pl_eqt', 'st_teff', 'st_logg', 'st_rad',
-                'st_tmag', 'st_dist', 'log_pl_orbper', 'log_pl_trandeperr1',
-                'log_st_teff', 'log_st_logg'
-            ]
-            existing_cols = [col for col in cols if col in df.columns]
-            return df.reindex(columns=existing_cols, fill_value=0.0)
+        cols = [
+            'pl_orbper', 'pl_trandurh', 'pl_trandeperr1', 'pl_trandep',
+            'pl_rade', 'pl_eqt', 'st_teff', 'st_logg', 'st_rad',
+            'st_tmag', 'st_dist', 'log_pl_orbper', 'log_pl_trandeperr1',
+            'log_st_teff', 'log_st_logg'
+        ]
+        return df.reindex(columns=cols, fill_value=np.nan)
 
-        else:
-            raise ValueError(f"Unknown mission: {mission}")
-    except Exception as e:
-        raise ValueError(f"Feature transformation error: {str(e)}")
+    else:
+        raise ValueError(f"Неизвестная миссия: {mission}")
 
-def find_model_files(base_dir, mission, level):
-    """Находит файлы моделей и скейлеров с различными расширениями"""
-    mission_dir = os.path.join(base_dir, mission)
-    
-    if not os.path.exists(mission_dir):
-        raise FileNotFoundError(f"Mission directory not found: {mission_dir}")
-    
-    print(f"Looking in directory: {mission_dir}")
-    print(f"Files in directory: {os.listdir(mission_dir)}")
-    
-    # Возможные шаблоны имен файлов
-    model_patterns = [
-        f"{mission}_level{level}_model.com",  # Ваш оригинальный формат
-        f"{mission}_level{level}_model.pkl",
-        f"{mission}_model_lvl{level}.pkl",
-        f"{mission}_model_lvl{level}.com",
-        f"{mission}_model{level}.pkl",
-        f"{mission}_model{level}.com",
-    ]
-    
-    scaler_patterns = [
-        f"{mission}_scaler_lvl{level}.pk1",  # Ваш оригинальный формат
-        f"{mission}_scaler_lvl{level}.pkl",
-        f"{mission}_scaler{level}.pkl",
-        f"{mission}_scaler{level}.pk1",
-    ]
-    
-    model_path = None
-    scaler_path = None
-    
-    # Ищем файл модели
-    for pattern in model_patterns:
-        potential_path = os.path.join(mission_dir, pattern)
-        if os.path.exists(potential_path):
-            model_path = potential_path
-            print(f"Found model: {model_path}")
-            break
-    
-    # Ищем файл скейлера
-    for pattern in scaler_patterns:
-        potential_path = os.path.join(mission_dir, pattern)
-        if os.path.exists(potential_path):
-            scaler_path = potential_path
-            print(f"Found scaler: {scaler_path}")
-            break
-    
-    if not model_path:
-        raise FileNotFoundError(f"Model file not found for {mission} level {level}. Checked patterns: {model_patterns}")
-    
-    if not scaler_path:
-        raise FileNotFoundError(f"Scaler file not found for {mission} level {level}. Checked patterns: {scaler_patterns}")
-    
-    return model_path, scaler_path
 
-def predict_exoplanet(sample_dict: dict, mission: str, level: int, base_dir=None) -> dict:
-    """Основная функция предсказания"""
-    if base_dir is None:
-        base_dir = os.path.join(settings.BASE_DIR, 'models_pkl')
-        
+# === 2. Трансформация + стандартизация ===
+def transform_and_scale(sample_dict: dict, mission: str, level: int, base_dir="models_pkl") -> pd.DataFrame:
     mission = mission.lower()
-    
-    try:
-        # Исправляем имена файлов в соответствии с вашей структурой
-        if mission == "tes":
-            mission = "tess"
-        
-        print(f"Starting prediction for {mission}, level {level}")
-        print(f"Base directory: {base_dir}")
-        
-        # Находим файлы моделей
-        model_path, scaler_path = find_model_files(base_dir, mission, level)
-        
-        # Загружаем скейлер и модель
-        print(f"Loading scaler from: {scaler_path}")
-        scaler = joblib.load(scaler_path)
-        print("Scaler loaded successfully")
-        
-        print(f"Loading model from: {model_path}")
-        model = joblib.load(model_path)
-        print("Model loaded successfully")
+    prefix = "tess" if mission == "tes" else mission
 
-        # Преобразуем и масштабируем данные
-        print("Transforming features...")
-        X = transform_features(sample_dict, mission)
-        print("Features transformed successfully")
-        
-        print("Scaling data...")
-        X_scaled = pd.DataFrame(scaler.transform(X.fillna(0)), columns=X.columns)
-        print("Data scaled successfully")
+    scaler_path = os.path.join(base_dir, mission, f"{prefix}_scaler_lvl{level}.pkl")
+    if not os.path.exists(scaler_path):
+        raise FileNotFoundError(f"Скейлер не найден: {scaler_path}")
 
-        # Делаем предсказание
-        print("Making prediction...")
-        if hasattr(model, 'predict_proba'):
-            proba = model.predict_proba(X_scaled)[0]
-            print(f"Prediction probabilities: {proba}")
-        else:
-            # Если нет predict_proba, создаем фиктивные вероятности
-            prediction = model.predict(X_scaled)[0]
-            proba = [0.3, 0.7] if prediction == 1 else [0.7, 0.3]
-            print(f"Direct prediction: {prediction}, probabilities: {proba}")
+    X = transform_features(sample_dict, prefix)
+    scaler = joblib.load(scaler_path)
 
-        result = {
-            "mission": mission,
-            "planet_prob": float(proba[1]),
-            "non_planet_prob": float(proba[0])
+    X_scaled = pd.DataFrame(
+        scaler.transform(X.fillna(0)),
+        columns=X.columns
+    )
+    return X_scaled
+
+
+# === 3. Полный пайплайн: трансформация → стандартизация → предсказание ===
+def predict_exoplanet(sample_dict: dict, mission: str, level: int, base_dir="models_pkl") -> dict:
+    mission = mission.lower()
+    prefix = "tess" if mission == "tes" else mission
+
+    model_path = os.path.join(base_dir, mission, f"{prefix}_model_lvl{level}.cbm")
+    scaler_path = os.path.join(base_dir, mission, f"{prefix}_scaler_lvl{level}.pkl")
+
+    if not os.path.exists(model_path):
+        raise FileNotFoundError(f"Модель не найдена: {model_path}")
+    if not os.path.exists(scaler_path):
+        raise FileNotFoundError(f"Скейлер не найден: {scaler_path}")
+
+    X_scaled = transform_and_scale(sample_dict, mission, level, base_dir)
+    model = joblib.load(model_path)
+    proba = model.predict_proba(X_scaled)[0]
+
+    result = {
+        "mission": mission,
+        "planet_prob": float(proba[1]),
+        "non_planet_prob": float(proba[0])
+    }
+
+    print(f"\n🪐 Миссия: {mission.upper()} | Уровень: {level}")
+    print(f"Вероятность планеты: {result['planet_prob']:.4f}")
+    print(f"Вероятность не-планеты: {result['non_planet_prob']:.4f}")
+    return result
+
+
+# === Пример запуска для всех миссий ===
+if __name__ == "__main__":
+    samples = {
+        "k2": {
+            "pl_orbper": 41.688644,
+            "pl_trandur": 2.3,
+            "pl_rade": 2.355,
+            "pl_ratror": 0.022,
+            "st_teff": 5703.0,
+            "st_rad": 0.95,
+            "sy_pmra": 36.5,
+            "sy_pmdec": -51.3,
+            "sy_dist": 179.46,
+            "sy_gaiamag": 10.86,
+            "sy_tmag": 10.40,
+            "sy_kepmag": 11.04,
+        },
+
+        "kepler": {
+            "koi_period": 3.45,
+            "koi_duration": 2.4,
+            "koi_depth": 400.0,
+            "koi_ror": 0.02,
+            "koi_dor": 25.0,
+            "koi_incl": 89.5,
+            "koi_impact": 0.3,
+            "koi_prad": 1.5,
+            "koi_sma": 0.05,
+            "koi_teq": 1200.0,
+            "koi_insol": 1800.0,
+            "koi_model_snr": 25.0,
+            "koi_num_transits": 15,
+            "koi_max_sngle_ev": 100.0,
+            "koi_steff": 5800,
+            "koi_slogg": 4.4,
+            "koi_smet": 0.1,
+            "koi_srad": 1.0,
+            "koi_smass": 1.0,
+            "koi_srho": 1.2,
+            "koi_kepmag": 12.3,
+            "koi_gmag": 13.0,
+            "koi_rmag": 12.8,
+            "koi_imag": 12.7,
+            "koi_zmag": 12.5,
+            "koi_jmag": 11.2,
+            "koi_hmag": 11.0,
+            "koi_kmag": 10.8,
+        },
+
+        "tess": {
+            "pl_orbper": 12.34,
+            "pl_trandurh": 3.21,
+            "pl_trandeperr1": 0.0012,
+            "pl_trandep": 0.0021,
+            "pl_rade": 1.2,
+            "pl_eqt": 800,
+            "st_teff": 5400,
+            "st_logg": 4.5,
+            "st_rad": 0.9,
+            "st_tmag": 10.8,
+            "st_dist": 100.0,
         }
-        
-        print(f"Prediction completed: {result}")
-        return result
-        
-    except Exception as e:
-        print(f"Error in predict_exoplanet: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        raise Exception(f"Prediction error: {str(e)}")
+    }
+
+    results = []
+    for mission, sample in samples.items():
+        result = predict_exoplanet(sample, mission=mission, level=1)
+        results.append(result)
+
+    df = pd.DataFrame(results)
+    print("\n===Сводная таблица ===")
+    print(df.to_string(index=False))

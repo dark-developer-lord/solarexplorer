@@ -3,187 +3,635 @@
 
 {% block title %}Exoplanet Predictor - Cognitive Chaos{% endblock %}
 
-{% block content %}
-<section class="py-16 px-4 chaos-section bg-gradient-chaos">
-    <div class="container mx-auto">
-        <h2 class="text-4xl font-bold text-center mb-8 chaos-text">🪐 Exoplanet Prediction System</h2>
-        
-        <!-- Mission Selection -->
-        <div class="glass-panel chaos-panel p-6 mb-8">
-            <h3 class="text-2xl font-bold mb-4 chaos-text">Select Mission</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <button class="mission-btn chaos-button py-4 px-6 rounded-xl text-center" data-mission="kepler">
-                    <span class="text-xl">🔭 Kepler</span>
-                    <p class="text-sm mt-2">Planet Candidate Analysis</p>
-                </button>
-                <button class="mission-btn chaos-button py-4 px-6 rounded-xl text-center" data-mission="tess">
-                    <span class="text-xl">🌟 TESS</span>
-                    <p class="text-sm mt-2">Transit Survey Data</p>
-                </button>
-                <button class="mission-btn chaos-button py-4 px-6 rounded-xl text-center" data-mission="k2">
-                    <span class="text-xl">🚀 K2</span>
-                    <p class="text-sm mt-2">Extended Mission Data</p>
-                </button>
-            </div>
-        </div>
-
-        <!-- Data Input Forms -->
-        <div id="forms-container" class="glass-panel chaos-panel p-6 mb-8 hidden">
-            <h3 id="form-title" class="text-2xl font-bold mb-6 chaos-text">Input Parameters</h3>
-            
-            <!-- Kepler Form -->
-            <div id="kepler-form" class="mission-form hidden">
-                <form id="kepler-data-form">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                        {% for field in kepler_form %}
-                        <div class="input-group">
-                            <label class="chaos-text block mb-2">{{ field.label }}</label>
-                            {{ field }}
-                        </div>
-                        {% endfor %}
-                    </div>
-                </form>
-            </div>
-
-            <!-- TESS Form -->
-            <div id="tess-form" class="mission-form hidden">
-                <form id="tess-data-form">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                        {% for field in tess_form %}
-                        <div class="input-group">
-                            <label class="chaos-text block mb-2">{{ field.label }}</label>
-                            {{ field }}
-                        </div>
-                        {% endfor %}
-                    </div>
-                </form>
-            </div>
-
-            <!-- K2 Form -->
-            <div id="k2-form" class="mission-form hidden">
-                <form id="k2-data-form">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                        {% for field in k2_form %}
-                        <div class="input-group">
-                            <label class="chaos-text block mb-2">{{ field.label }}</label>
-                            {{ field }}
-                        </div>
-                        {% endfor %}
-                    </div>
-                </form>
-            </div>
-
-            <!-- Model Level Selection -->
-            <div class="mb-6">
-                <label class="chaos-text block mb-2">Model Level</label>
-                <select id="model-level" class="glass-input w-full p-3 rounded-lg">
-                    <option value="1">Level 1 - Standard Model</option>
-                    <option value="2">Level 2 - Advanced Model</option>
-                </select>
-            </div>
-
-            <button id="predict-btn" class="chaos-button text-white py-4 px-8 rounded-xl w-full text-xl">
-                🚀 Analyze Exoplanet Data
-            </button>
-        </div>
-
-        <!-- Results Section -->
-        <div id="results-container" class="glass-panel chaos-panel p-6 hidden">
-            <h3 class="text-2xl font-bold mb-6 chaos-text">Prediction Results</h3>
-            <div id="results-content">
-                <!-- Results will be populated here -->
-            </div>
-        </div>
-
-        <!-- Loading Indicator -->
-        <div id="loading-indicator" class="glass-panel chaos-panel p-6 text-center hidden">
-            <div class="skeleton w-16 h-16 mx-auto mb-4 rounded-full"></div>
-            <p class="chaos-text">Analyzing celestial data...</p>
-        </div>
-    </div>
-</section>
-
+{% block extra_css %}
 <style>
-.mission-btn {
-    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+/* Custom Styles for Exoplanet Predictor */
+.exoplanet-container {
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
 }
 
-.mission-btn:hover {
-    transform: translateY(-5px) scale(1.02);
-    box-shadow: 0 12px 40px rgba(102, 126, 234, 0.3);
+.floating-stars {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
 }
 
-.probability-bar {
-    height: 20px;
-    border-radius: 10px;
-    transition: width 1s ease-in-out;
+.star {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle 3s infinite;
 }
 
-.status-success { 
-    border-left: 4px solid #10b981; 
-    background: rgba(16, 185, 129, 0.1); 
+@keyframes twinkle {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.2); }
 }
-.status-warning { 
-    border-left: 4px solid #f59e0b; 
-    background: rgba(245, 158, 11, 0.1); 
+
+.mission-grid {
+    display: grid;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
 }
-.status-error { 
-    border-left: 4px solid #ef4444; 
-    background: rgba(239, 68, 68, 0.1); 
+
+.mission-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border: var(--glass-border);
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+}
+
+.mission-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.5s;
+}
+
+.mission-card:hover::before {
+    left: 100%;
+}
+
+.mission-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.mission-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.mission-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: var(--chaos-text) !important;
+}
+
+.mission-desc {
+    color: var(--chaos-text) !important;
+    opacity: 0.8;
+}
+
+/* Table Styles */
+.parameters-table-container {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.parameters-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #000;
+}
+
+.parameters-table th {
+    background: var(--chaos-primary);
+    color: white;
+    padding: 1rem;
+    text-align: left;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.parameters-table td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    color: #000;
+}
+
+.parameters-table tr:nth-child(even) {
+    background: rgba(0,0,0,0.03);
+}
+
+.parameters-table tr:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.parameter-label {
+    font-weight: 600;
+    width: 40%;
+    color: #2d3748;
+}
+
+.parameter-input-cell {
+    width: 60%;
 }
 
 .glass-input {
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: #000;
-    padding: 0.75rem;
-    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid rgba(0, 0, 0, 0.2) !important;
+    color: #000 !important;
+    padding: 0.75rem !important;
+    border-radius: 8px !important;
     width: 100%;
+    transition: var(--transition-smooth);
+    font-size: 0.9rem;
 }
 
 .glass-input:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+    transform: scale(1.02);
 }
+
+.input-group {
+    position: relative;
+}
+
+.input-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--chaos-text) !important;
+}
+
+.predict-button {
+    background: var(--chaos-primary);
+    color: white;
+    border: none;
+    padding: 1.5rem 2rem;
+    border-radius: 15px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.predict-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.predict-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.predict-button:hover::before {
+    left: 100%;
+}
+
+.results-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border: var(--glass-border);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-top: 2rem;
+}
+
+.probability-display {
+    display: grid;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.probability-item {
+    text-align: center;
+}
+
+.probability-bar {
+    height: 30px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 15px;
+    overflow: hidden;
+    margin: 1rem 0;
+    position: relative;
+}
+
+.bar-fill {
+    height: 100%;
+    border-radius: 15px;
+    transition: width 1.5s ease-in-out;
+    position: relative;
+}
+
+.bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.planet-bar { background: linear-gradient(90deg, #10b981, #059669); }
+.non-planet-bar { background: linear-gradient(90deg, #ef4444, #dc2626); }
+
+.stats-grid {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-item {
+    background: rgba(255,255,255,0.1);
+    padding: 1rem;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-weight: bold;
+    margin-left: 1rem;
+}
+
+.status-success { background: #10b981; color: white; }
+.status-warning { background: #f59e0b; color: white; }
+.status-error { background: #ef4444; color: white; }
 
 .result-table {
     width: 100%;
     border-collapse: collapse;
-}
-
-.result-table th, .result-table td {
-    padding: 0.75rem;
-    text-align: left;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    color: #000;
+    background: rgba(255,255,255,0.9);
+    border-radius: 12px;
+    overflow: hidden;
+    color: #000 !important;
 }
 
 .result-table th {
-    background: rgba(255, 255, 255, 0.2);
-    font-weight: bold;
+    background: var(--chaos-primary);
+    color: white;
+    padding: 1rem;
+    text-align: left;
 }
 
-.hidden {
-    display: none;
+.result-table td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    color: #000 !important;
+}
+
+.result-table tr:nth-child(even) {
+    background: rgba(0,0,0,0.05);
+}
+
+.loading-animation {
+    text-align: center;
+    padding: 3rem;
+}
+
+.orbit {
+    width: 80px;
+    height: 80px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    position: relative;
+    margin: 0 auto 2rem;
+    animation: rotate 3s linear infinite;
+}
+
+.planet {
+    width: 20px;
+    height: 20px;
+    background: var(--chaos-primary);
+    border-radius: 50%;
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+@keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.model-level-info {
+    background: rgba(255,255,255,0.1);
+    padding: 1rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+
+.level-description {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-top: 0.5rem;
+}
+
+.table-section-header {
+    background: rgba(102, 126, 234, 0.1);
+    font-weight: bold;
+    color: #2d3748;
+    padding: 0.75rem 1rem;
+    border-left: 4px solid var(--chaos-primary);
+}
+
+/* Scrollbar styling */
+.parameters-table-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.parameters-table-container::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+}
+
+.parameters-table-container::-webkit-scrollbar-thumb {
+    background: var(--chaos-primary);
+    border-radius: 4px;
+}
+
+.parameters-table-container::-webkit-scrollbar-thumb:hover {
+    background: #5a6fd8;
+}
+
+@media (min-width: 768px) {
+    .mission-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .probability-display {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Mobile responsiveness for tables */
+@media (max-width: 767px) {
+    .parameters-table-container {
+        font-size: 0.8rem;
+    }
+    
+    .parameters-table th,
+    .parameters-table td {
+        padding: 0.5rem;
+    }
+    
+    .glass-input {
+        padding: 0.5rem !important;
+        font-size: 0.8rem;
+    }
 }
 </style>
+{% endblock %}
 
+{% block content %}
+<div class="exoplanet-container chaos-bg">
+    <div class="floating-stars" id="stars-container"></div>
+    
+    <section class="py-12 px-4 chaos-section">
+        <div class="container mx-auto max-w-7xl">
+            <!-- Header -->
+            <div class="text-center mb-12 glass-panel p-8 chaos-panel">
+                <h1 class="text-5xl font-bold mb-4 chaos-text">🌌 Exoplanet Discovery Engine</h1>
+                <p class="text-xl chaos-text opacity-80">Advanced machine learning for planetary candidate classification</p>
+            </div>
+
+            <!-- Mission Selection -->
+            <div class="glass-panel chaos-panel p-8 mb-8">
+                <h2 class="text-3xl font-bold mb-6 chaos-text text-center">Select Space Mission</h2>
+                <div class="mission-grid">
+                    <div class="mission-card" data-mission="k2">
+                        <span class="mission-icon">🚀</span>
+                        <div class="mission-title">K2 Mission</div>
+                        <div class="mission-desc">Extended Kepler mission with enhanced field coverage</div>
+                    </div>
+                    <div class="mission-card" data-mission="kepler">
+                        <span class="mission-icon">🔭</span>
+                        <div class="mission-title">Kepler Mission</div>
+                        <div class="mission-desc">Precise photometry for planetary transit detection</div>
+                    </div>
+                    <div class="mission-card" data-mission="tess">
+                        <span class="mission-icon">🌟</span>
+                        <div class="mission-title">TESS Survey</div>
+                        <div class="mission-desc">All-sky transit survey for nearby exoplanets</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Input Forms -->
+            <div id="forms-container" class="glass-panel chaos-panel p-8 mb-8 hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 id="form-title" class="text-3xl font-bold chaos-text">Mission Parameters</h2>
+                    <button onclick="resetSelection()" class="chaos-button py-2 px-4 rounded-lg">
+                        🔄 Change Mission
+                    </button>
+                </div>
+                
+                <!-- K2 Form -->
+                <div id="k2-form" class="mission-form hidden">
+                    <div class="model-level-info">
+                        <strong>K2 Mission Parameters</strong>
+                        <div class="level-description">Orbital characteristics, stellar properties, and astrometric data</div>
+                    </div>
+                    
+                    <div class="parameters-table-container">
+                        <table class="parameters-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for field in k2_form %}
+                                <tr class="parameter-row">
+                                    <td class="parameter-label">
+                                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    </td>
+                                    <td class="parameter-input-cell">
+                                        {{ field }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Kepler Form -->
+                <div id="kepler-form" class="mission-form hidden">
+                    <div class="model-level-info">
+                        <strong>Kepler Mission Parameters</strong>
+                        <div class="level-description">KOI (Kepler Object of Interest) transit and stellar parameters</div>
+                    </div>
+                    
+                    <div class="parameters-table-container">
+                        <table class="parameters-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for field in kepler_form %}
+                                <tr class="parameter-row">
+                                    <td class="parameter-label">
+                                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    </td>
+                                    <td class="parameter-input-cell">
+                                        {{ field }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TESS Form -->
+                <div id="tess-form" class="mission-form hidden">
+                    <div class="model-level-info">
+                        <strong>TESS Mission Parameters</strong>
+                        <div class="level-description">Transit timing, depth, and stellar characteristics</div>
+                    </div>
+                    
+                    <div class="parameters-table-container">
+                        <table class="parameters-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for field in tess_form %}
+                                <tr class="parameter-row">
+                                    <td class="parameter-label">
+                                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    </td>
+                                    <td class="parameter-input-cell">
+                                        {{ field }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Model Configuration -->
+                <div class="glass-panel p-6 mt-6">
+                    <h3 class="text-xl font-bold mb-4 chaos-text">Model Configuration</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="input-label">Model Level</label>
+                            <select id="model-level" class="glass-input w-full p-3">
+                                <option value="1">🌱 Level 1 - Standard Analysis</option>
+                                <option value="2">🚀 Level 2 - Advanced Processing</option>
+                            </select>
+                            <div class="level-description mt-2">
+                                <strong>Level 1:</strong> Standard feature processing and classification<br>
+                                <strong>Level 2:</strong> Enhanced preprocessing and optimized thresholds
+                            </div>
+                        </div>
+                        <div class="flex items-end">
+                            <button id="predict-btn" class="predict-button">
+                                🚀 Launch Analysis
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Animation -->
+            <div id="loading-indicator" class="glass-panel chaos-panel p-12 text-center hidden">
+                <div class="loading-animation">
+                    <div class="orbit">
+                        <div class="planet"></div>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 chaos-text">Analyzing Celestial Data</h3>
+                    <p class="chaos-text opacity-80">Processing light curves and spectral data...</p>
+                    <div class="mt-4 chaos-text opacity-60">
+                        <div>🔭 Gathering transit data</div>
+                        <div>📊 Analyzing stellar parameters</div>
+                        <div>🤖 Running ML classification</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div id="results-container" class="results-panel hidden">
+                <!-- Results populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
 <script>
+// Create floating stars background
+function createStars() {
+    const container = document.getElementById('stars-container');
+    const starsCount = 50;
+    
+    for (let i = 0; i < starsCount; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.width = Math.random() * 3 + 1 + 'px';
+        star.style.height = star.style.width;
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 100 + '%';
+        star.style.animationDelay = Math.random() * 3 + 's';
+        star.style.opacity = Math.random() * 0.7 + 0.3;
+        container.appendChild(star);
+    }
+}
+
+// Mission selection logic
+let currentMission = '';
+
 document.addEventListener('DOMContentLoaded', function() {
-    const missionBtns = document.querySelectorAll('.mission-btn');
+    createStars();
+    
+    const missionCards = document.querySelectorAll('.mission-card');
     const formsContainer = document.getElementById('forms-container');
     const formTitle = document.getElementById('form-title');
     const resultsContainer = document.getElementById('results-container');
     const loadingIndicator = document.getElementById('loading-indicator');
     const predictBtn = document.getElementById('predict-btn');
     
-    let currentMission = '';
-
-    // Mission selection
-    missionBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
+    missionCards.forEach(card => {
+        card.addEventListener('click', function() {
             currentMission = this.dataset.mission;
             formsContainer.classList.remove('hidden');
             
@@ -197,14 +645,17 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Update title
             const missionNames = {
-                'kepler': 'Kepler',
-                'tess': 'TESS', 
-                'k2': 'K2'
+                'k2': 'K2 Mission Parameters',
+                'kepler': 'Kepler Mission Parameters', 
+                'tess': 'TESS Survey Parameters'
             };
-            formTitle.textContent = `${missionNames[currentMission]} Data Input`;
+            formTitle.textContent = missionNames[currentMission];
             
             // Hide previous results
             resultsContainer.classList.add('hidden');
+            
+            // Scroll to forms
+            formsContainer.scrollIntoView({ behavior: 'smooth' });
         });
     });
 
@@ -219,19 +670,35 @@ document.addEventListener('DOMContentLoaded', function() {
         const formData = {};
         const inputs = document.querySelectorAll(`#${currentMission}-data-form input`);
         let valid = true;
+        let emptyFields = [];
 
         inputs.forEach(input => {
-            if (input.value === '') {
+            if (input.value === '' || input.value === null) {
                 valid = false;
-                input.style.borderColor = 'red';
+                input.style.borderColor = '#ef4444';
+                emptyFields.push(input.name);
             } else {
                 input.style.borderColor = '';
-                formData[input.name] = parseFloat(input.value);
+                // Convert to number, handling scientific notation
+                let value = input.value;
+                if (value.includes('e') || value.includes('E')) {
+                    value = parseFloat(value);
+                } else {
+                    value = Number(value);
+                }
+                
+                if (isNaN(value)) {
+                    valid = false;
+                    input.style.borderColor = '#ef4444';
+                    emptyFields.push(input.name + ' (invalid number)');
+                } else {
+                    formData[input.name] = value;
+                }
             }
         });
 
         if (!valid) {
-            alert('Please fill in all required fields!');
+            alert('Please fill in all required fields with valid numbers!\n\nMissing fields: ' + emptyFields.join(', '));
             return;
         }
 
@@ -263,7 +730,6 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => {
             console.log('Response status:', response.status);
             if (!response.ok) {
-                // Try to get more details from the response
                 return response.text().then(text => {
                     let errorMsg = `HTTP ${response.status}`;
                     try {
@@ -291,99 +757,142 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Full error details:', error);
             loadingIndicator.classList.add('hidden');
             formsContainer.classList.remove('hidden');
-            alert('Error: ' + error.message);
+            alert('Analysis failed: ' + error.message);
         });
     });
-
-    function displayResults(data) {
-        // ... оставьте предыдущую реализацию displayResults ...
-        const resultsContent = document.getElementById('results-content');
-        const planetProb = (data.planet_prob * 100).toFixed(2);
-        const nonPlanetProb = (data.non_planet_prob * 100).toFixed(2);
-        
-        const statusClass = data.status_class ? `status-${data.status_class}` : 'status-warning';
-        const status = data.status || 'Unknown';
-        const recommendation = data.recommendation || 'No recommendation available';
-        const mission = data.mission || 'Unknown';
-        const level = data.level || 'Unknown';
-
-        resultsContent.innerHTML = `
-            <div class="${statusClass} p-6 mb-6 rounded-xl">
-                <div class="flex justify-between items-center mb-4">
-                    <h4 class="text-xl font-bold chaos-text">Analysis Complete</h4>
-                    <span class="px-3 py-1 rounded-full text-sm font-bold chaos-text bg-white bg-opacity-20">
-                        ${status}
-                    </span>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div>
-                        <h5 class="font-bold chaos-text mb-2">🌍 Planet Probability</h5>
-                        <div class="flex items-center gap-4">
-                            <div class="flex-1 bg-gray-200 rounded-full h-6">
-                                <div class="probability-bar h-6 rounded-full bg-gradient-to-r from-green-400 to-blue-500" 
-                                     style="width: ${planetProb}%"></div>
-                            </div>
-                            <span class="font-bold chaos-text text-xl">${planetProb}%</span>
-                        </div>
-                    </div>
-                    <div>
-                        <h5 class="font-bold chaos-text mb-2">⭐ Non-Planet Probability</h5>
-                        <div class="flex items-center gap-4">
-                            <div class="flex-1 bg-gray-200 rounded-full h-6">
-                                <div class="probability-bar h-6 rounded-full bg-gradient-to-r from-red-400 to-purple-500" 
-                                     style="width: ${nonPlanetProb}%"></div>
-                            </div>
-                            <span class="font-bold chaos-text text-xl">${nonPlanetProb}%</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center mb-6">
-                    <div class="glass-panel p-4">
-                        <div class="text-sm chaos-text opacity-75">Mission</div>
-                        <div class="font-bold chaos-text text-lg">${mission}</div>
-                    </div>
-                    <div class="glass-panel p-4">
-                        <div class="text-sm chaos-text opacity-75">Model Level</div>
-                        <div class="font-bold chaos-text text-lg">${level}</div>
-                    </div>
-                    <div class="glass-panel p-4">
-                        <div class="text-sm chaos-text opacity-75">Confidence</div>
-                        <div class="font-bold chaos-text text-lg">${recommendation.split(' ')[0]}</div>
-                    </div>
-                </div>
-
-                <div class="mt-6 p-4 glass-panel bg-opacity-50">
-                    <h6 class="font-bold chaos-text mb-2">📋 Recommendation</h6>
-                    <p class="chaos-text text-lg">${recommendation}</p>
-                </div>
-            </div>
-
-            <!-- DataFrame Results -->
-            <div class="glass-panel p-6">
-                <h6 class="font-bold chaos-text mb-4 text-xl">📊 Detailed Analysis Results</h6>
-                <div class="overflow-x-auto">
-                    ${data.dataframe_html || '<p class="chaos-text">No detailed data available</p>'}
-                </div>
-            </div>
-
-            <div class="text-center mt-8">
-                <button onclick="location.reload()" class="chaos-button py-3 px-6 rounded-lg text-lg">
-                    🔄 Analyze Another Object
-                </button>
-            </div>
-        `;
-
-        resultsContainer.classList.remove('hidden');
-        
-        // Animate probability bars
-        setTimeout(() => {
-            document.querySelectorAll('.probability-bar').forEach(bar => {
-                bar.style.transition = 'width 1.5s ease-in-out';
-            });
-        }, 100);
-    }
 });
+
+function resetSelection() {
+    currentMission = '';
+    document.getElementById('forms-container').classList.add('hidden');
+    document.getElementById('results-container').classList.add('hidden');
+    
+    // Reset all form borders
+    document.querySelectorAll('.glass-input').forEach(input => {
+        input.style.borderColor = '';
+    });
+}
+
+function displayResults(data) {
+    const resultsContainer = document.getElementById('results-container');
+    const planetProb = (data.planet_prob * 100).toFixed(2);
+    const nonPlanetProb = (data.non_planet_prob * 100).toFixed(2);
+    
+    const statusClass = data.status_class ? `status-${data.status_class}` : 'status-warning';
+    const status = data.status || 'Unknown';
+    const recommendation = data.recommendation || 'No recommendation available';
+    const mission = data.mission || 'Unknown';
+    const level = data.level || 'Unknown';
+    const icon = data.icon || '🪐';
+
+    // Determine confidence level
+    let confidence = 'Low';
+    let confidenceColor = '#ef4444';
+    if (data.planet_prob > 0.7) {
+        confidence = 'High';
+        confidenceColor = '#10b981';
+    } else if (data.planet_prob > 0.5) {
+        confidence = 'Medium';
+        confidenceColor = '#f59e0b';
+    }
+
+    resultsContainer.innerHTML = `
+        <div class="glass-panel p-8 mb-6" style="border-left: 4px solid ${confidenceColor};">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-4">
+                    <span class="text-4xl">${icon}</span>
+                    <div>
+                        <h2 class="text-3xl font-bold chaos-text">Analysis Complete</h2>
+                        <p class="chaos-text opacity-80">${mission} • Level ${level} Model</p>
+                    </div>
+                </div>
+                <span class="status-badge ${statusClass}">${status}</span>
+            </div>
+            
+            <div class="probability-display">
+                <div class="probability-item">
+                    <h3 class="text-xl font-bold chaos-text mb-2">🌍 Planet Probability</h3>
+                    <div class="probability-bar">
+                        <div class="bar-fill planet-bar" style="width: ${planetProb}%"></div>
+                    </div>
+                    <div class="text-3xl font-bold chaos-text" style="color: ${confidenceColor}">${planetProb}%</div>
+                    <div class="chaos-text opacity-80 mt-2">Confidence: ${confidence}</div>
+                </div>
+                <div class="probability-item">
+                    <h3 class="text-xl font-bold chaos-text mb-2">⭐ Non-Planet Probability</h3>
+                    <div class="probability-bar">
+                        <div class="bar-fill non-planet-bar" style="width: ${nonPlanetProb}%"></div>
+                    </div>
+                    <div class="text-3xl font-bold chaos-text">${nonPlanetProb}%</div>
+                    <div class="chaos-text opacity-80 mt-2">False Positive Indicator</div>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="text-sm chaos-text opacity-75">Mission</div>
+                    <div class="text-xl font-bold chaos-text">${mission}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="text-sm chaos-text opacity-75">Model Level</div>
+                    <div class="text-xl font-bold chaos-text">${level}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="text-sm chaos-text opacity-75">Confidence</div>
+                    <div class="text-xl font-bold chaos-text" style="color: ${confidenceColor}">${confidence}</div>
+                </div>
+            </div>
+
+            <div class="mt-6 p-6 glass-panel bg-opacity-50">
+                <h4 class="text-xl font-bold chaos-text mb-3">📋 Scientific Recommendation</h4>
+                <p class="chaos-text text-lg leading-relaxed">${recommendation}</p>
+            </div>
+        </div>
+
+        <!-- Detailed Results Table -->
+        <div class="glass-panel p-6 mb-6">
+            <h4 class="text-2xl font-bold chaos-text mb-4">📊 Detailed Analysis Results</h4>
+            <div class="overflow-x-auto">
+                ${data.dataframe_html || '<p class="chaos-text">No detailed data available</p>'}
+            </div>
+        </div>
+
+        <!-- Model Information -->
+        <div class="glass-panel p-6 mb-6">
+            <h4 class="text-xl font-bold chaos-text mb-4">🤖 Model Information</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="stat-item">
+                    <div class="text-sm chaos-text opacity-75">Processing Level</div>
+                    <div class="text-lg font-bold chaos-text">Level ${level} - ${level == 1 ? 'Standard Analysis' : 'Advanced Processing'}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="text-sm chaos-text opacity-75">Parameters Analyzed</div>
+                    <div class="text-lg font-bold chaos-text">${Object.keys(data.sample_data || {}).length} features</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-8">
+            <button onclick="resetSelection()" class="chaos-button py-3 px-8 rounded-lg text-lg mr-4">
+                🔄 Analyze Another Object
+            </button>
+            <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="glass-panel py-3 px-6 rounded-lg text-lg chaos-text">
+                ⬆️ Back to Top
+            </button>
+        </div>
+    `;
+
+    resultsContainer.classList.remove('hidden');
+    
+    // Animate probability bars
+    setTimeout(() => {
+        document.querySelectorAll('.bar-fill').forEach(bar => {
+            bar.style.transition = 'width 1.5s ease-in-out';
+        });
+    }, 100);
+    
+    // Scroll to results
+    resultsContainer.scrollIntoView({ behavior: 'smooth' });
+}
 </script>
 {% endblock %}
